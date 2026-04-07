@@ -1,7 +1,6 @@
 """src/training/registry.py — Model registry: promote, alias, load champion."""
 from __future__ import annotations
 
-from pathlib import Path
 
 import mlflow
 import mlflow.pytorch
