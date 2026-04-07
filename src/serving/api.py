@@ -8,7 +8,6 @@ from typing import Any
 import torch
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from starlette.responses import Response
 from transformers import AutoTokenizer
@@ -130,7 +129,7 @@ async def feedback(request: Request):
     from src.utils.schema import FeedbackRecord
     from datetime import datetime, timezone
     from pathlib import Path
-    import json
+
 
     record = FeedbackRecord(
         prediction_id=body.get("prediction_id", "unknown"),
