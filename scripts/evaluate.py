@@ -15,7 +15,6 @@ def main(
     config: Path = typer.Option("configs/config.yaml", help="Path to config YAML"),
 ):
     import pandas as pd
-    import torch
     from torch.utils.data import DataLoader
     from transformers import AutoTokenizer
     from src.utils.config import load_config
