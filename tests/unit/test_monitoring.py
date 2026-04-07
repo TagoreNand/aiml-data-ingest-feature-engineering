@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-import numpy as np
-import pandas as pd
+
 import pytest
 
 from src.monitoring.metrics import MetricsCollector, LatencyWindow
