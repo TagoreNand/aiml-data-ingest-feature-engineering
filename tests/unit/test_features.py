@@ -8,8 +8,8 @@ import pytest
 
 from src.features.pipeline import FeatureTransformer, FeaturePipeline
 from src.utils.schema import (
-    RawRecord, FeatureRow, ModelMetrics, PredictRequest,
-    PredictResponse, DriftReport, FeedbackRecord,
+    RawRecord, ModelMetrics, PredictRequest,
+    DriftReport, 
 )
 
 
