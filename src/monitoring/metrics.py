@@ -24,7 +24,7 @@ class LatencyWindow:
         with self._lock:
             if not self._values:
                 return 0.0
-            import statistics
+                
             sorted_vals = sorted(self._values)
             idx = int(len(sorted_vals) * p / 100)
             return sorted_vals[min(idx, len(sorted_vals) - 1)]
