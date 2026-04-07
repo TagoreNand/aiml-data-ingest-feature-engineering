@@ -1,9 +1,9 @@
 """src/monitoring/metrics.py — Latency, error rate, and custom business metric tracking."""
-from datetime import datetime, timezone
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from collections import deque
 from threading import Lock
 from typing import Deque
