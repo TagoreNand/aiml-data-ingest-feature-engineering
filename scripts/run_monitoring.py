@@ -41,7 +41,7 @@ def main(
         console.print(f"[green]No retraining needed:[/] {reason}")
 
     snap = get_collector().snapshot()
-    console.print(f"\n[bold]Performance snapshot:[/]")
+    console.print("\n[bold]Performance snapshot:[/]")
     console.print(f"  requests : {snap['total_requests']:,}")
     console.print(f"  errors   : {snap['error_rate']:.2%}")
     console.print(f"  p99 lat  : {snap['latency']['p99_ms']} ms")
