@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import time
-from collections import deque
 from dataclasses import dataclass, field
 from collections import deque
 from threading import Lock
@@ -28,17 +27,22 @@ class LatencyWindow:
         with self._lock:
             if not self._values:
                 return 0.0
-                
             sorted_vals = sorted(self._values)
             idx = int(len(sorted_vals) * p / 100)
             return sorted_vals[min(idx, len(sorted_vals) - 1)]
 
     @property
-    def p50(self) -> float: return self.percentile(50)
+    def p50(self) -> float:
+        return self.percentile(50)
+
     @property
-    def p95(self) -> float: return self.percentile(95)
+    def p95(self) -> float:
+        return self.percentile(95)
+
     @property
-    def p99(self) -> float: return self.percentile(99)
+    def p99(self) -> float:
+        return self.percentile(99)
+
     @property
     def mean(self) -> float:
         with self._lock:
