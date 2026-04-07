@@ -1,0 +1,147 @@
+# configs/config.example.yaml
+# Copy to config.yaml and fill in your values.
+
+project:
+  name: aiml_platform
+  version: "1.0.0"
+  environment: development   # development | staging | production
+
+# ── DATA ──────────────────────────────────────────────────────────────────────
+data:
+  raw_path: data/raw
+  processed_path: data/processed
+  features_path: data/features
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  random_seed: 42
+
+# ── INGESTION ─────────────────────────────────────────────────────────────────
+ingestion:
+  kafka:
+    bootstrap_servers: "localhost:9092"
+    topic: raw_events
+    group_id: aiml_consumer
+    auto_offset_reset: earliest
+
+  batch:
+    schedule_cron: "0 2 * * *"   # 02:00 daily
+    source_path: s3://my-bucket/raw/
+    format: parquet
+
+  api:
+    base_url: https://api.example.com
+    rate_limit_rps: 10
+    timeout_seconds: 30
+    retry_attempts: 3
+
+# ── FEATURE STORE ─────────────────────────────────────────────────────────────
+feature_store:
+  provider: feast               # feast | tecton | custom
+  registry: data/features/registry.db
+  online_store:
+    type: redis
+    connection_string: redis://localhost:6379
+  offline_store:
+    type: file
+    base_path: data/features/offline
+
+# ── VECTOR DB ─────────────────────────────────────────────────────────────────
+vector_db:
+  provider: faiss               # faiss | weaviate | pinecone
+  index_path: models/faiss_index
+  embedding_model: sentence-transformers/all-MiniLM-L6-v2
+  embedding_dim: 384
+  top_k: 10
+
+# ── TRAINING ──────────────────────────────────────────────────────────────────
+training:
+  model_name: bert-base-uncased
+  task: text_classification      # text_classification | regression | ner | generation
+  num_labels: 2
+  max_length: 128
+
+  hyperparams:
+    learning_rate: 2.0e-5
+    batch_size: 32
+    num_epochs: 10
+    warmup_ratio: 0.1
+    weight_decay: 0.01
+    gradient_clip: 1.0
+
+  distributed:
+    enabled: false
+    backend: nccl                # nccl | gloo
+    num_gpus: 1
+
+  mlflow:
+    tracking_uri: http://localhost:5000
+    experiment_name: default_experiment
+    artifact_location: models/mlflow_artifacts
+
+  hpo:
+    enabled: false
+    n_trials: 30
+    timeout_seconds: 3600
+    metric: val_f1
+    direction: maximize
+    sampler: tpe                 # tpe | random | grid
+
+# ── MODEL REGISTRY ────────────────────────────────────────────────────────────
+model_registry:
+  backend: mlflow               # mlflow | custom
+  promote_threshold:
+    val_f1: 0.85
+    val_loss: 0.3
+  staging_alias: challenger
+  production_alias: champion
+
+# ── SERVING ───────────────────────────────────────────────────────────────────
+serving:
+  api:
+    host: 0.0.0.0
+    port: 8000
+    workers: 4
+    max_batch_size: 64
+    timeout_seconds: 10
+
+  rag:
+    enabled: true
+    llm_model: gpt-4o-mini
+    max_tokens: 512
+    temperature: 0.2
+    system_prompt: "You are a helpful assistant. Answer based only on the provided context."
+
+  batch:
+    schedule_cron: "0 4 * * *"
+    input_path: data/processed/batch_input
+    output_path: data/processed/batch_output
+    chunk_size: 1000
+
+# ── MONITORING ────────────────────────────────────────────────────────────────
+monitoring:
+  drift:
+    enabled: true
+    check_interval_minutes: 60
+    reference_path: data/processed/reference_dataset.parquet
+    psi_threshold: 0.2
+    ks_p_value_threshold: 0.05
+
+  performance:
+    latency_p99_threshold_ms: 200
+    error_rate_threshold: 0.01
+    prometheus_port: 9090
+
+  feedback:
+    enabled: true
+    collection_path: data/raw/feedback
+    min_samples_for_retrain: 500
+    retrain_trigger_drift_score: 0.25
+
+# ── LOGGING ───────────────────────────────────────────────────────────────────
+logging:
+  level: INFO
+  format: json
+  output: logs/app.log
+  rotation: "100 MB"
+  retention: "30 days"
