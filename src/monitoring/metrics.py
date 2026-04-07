@@ -4,7 +4,7 @@ from __future__ import annotations
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from collections import deque
 from threading import Lock
 from typing import Deque
 
@@ -12,9 +12,13 @@ from typing import Deque
 @dataclass
 class LatencyWindow:
     """Rolling window of latency measurements (milliseconds)."""
+
     window_size: int = 1000
-    _values: Deque[float] = field(default_factory=lambda: deque(maxlen=1000))
+    _values: Deque[float] = field(init=False)
     _lock: Lock = field(default_factory=Lock)
+
+    def __post_init__(self) -> None:
+        self._values = deque(maxlen=self.window_size)
 
     def record(self, latency_ms: float) -> None:
         with self._lock:
