@@ -4,11 +4,11 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 from transformers import (
-    AutoConfig,
+
     AutoModel,
     AutoModelForSequenceClassification,
     AutoModelForCausalLM,
-    PreTrainedModel,
+    
 )
 
 from src.utils.logger import logger
