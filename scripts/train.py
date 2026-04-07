@@ -18,11 +18,9 @@ def main(
     dry_run: bool = typer.Option(False, help="Load data and model but skip training"),
 ):
     from src.utils.config import load_config
-    from src.utils.logger import logger
     from src.features.pipeline import FeaturePipeline
     from src.training.trainer import Trainer, TextDataset
     from src.training.registry import ModelRegistry
-    from src.utils.schema import ModelMetrics
     from transformers import AutoTokenizer
     from torch.utils.data import DataLoader
     import pandas as pd
