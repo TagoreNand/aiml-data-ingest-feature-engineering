@@ -139,12 +139,11 @@ class APIIngestor(BaseIngestor):
 # ── Factory ───────────────────────────────────────────────────────────────────
 
 def get_ingestor(source: str, config: dict | None = None) -> BaseIngestor:
-    mapping = {
-        "batch": BatchIngestor,
-        "kafka": KafkaIngestor,
-        "api": APIIngestor,
-    }
-    cls = mapping.get(source)
-    if cls is None:
-        raise ValueError(f"Unknown source '{source}'. Choose from: {list(mapping)}")
-    return cls(config=config)
+    if source == "batch":
+        return BatchIngestor(config=config)
+    if source == "kafka":
+        return KafkaIngestor(config=config)
+    if source == "api":
+        return APIIngestor(config=config)
+
+    raise ValueError(f"Unknown source '{source}'. Choose from: ['batch', 'kafka', 'api']")
