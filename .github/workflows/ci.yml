@@ -34,6 +34,8 @@ jobs:
         with: { python-version: "${{ env.PYTHON_VERSION }}" }
       - name: Install dependencies
         run: pip install -r requirements.txt
+      - name: Copy example config
+        run: cp configs/config.example.yaml configs/config.yaml
       - name: Run unit tests
         run: pytest tests/unit/ -v --cov=src --cov-report=xml
       - name: Upload coverage
