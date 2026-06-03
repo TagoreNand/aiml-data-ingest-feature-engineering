@@ -13,3 +13,8 @@ logs/
 .env
 *.egg-info/
 .pytest_cache/
+
+models/model.onnx
+models/*.pt
+models/*.onnx
+models/tier2_lora_best.pt
