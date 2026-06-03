@@ -1,4 +1,4 @@
-# ── Stage 1: Builder ──────────────────────────────────────────────────────────
+﻿# ── Stage 1: Builder ──────────────────────────────────────────────────────────
 FROM python:3.11-slim AS builder
 WORKDIR /build
 
@@ -22,7 +22,6 @@ ENV PATH=/root/.local/bin:$PATH
 # Copy application code
 COPY src/        ./src/
 COPY configs/    ./configs/
-COPY models/     ./models/
 
 # Pre-download tokenizer at build time (avoids runtime HuggingFace calls)
 RUN python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretrained('bert-base-uncased')"
