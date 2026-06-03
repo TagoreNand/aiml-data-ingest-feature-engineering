@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoModel, AutoTokenizer
-from pathlib import Path
 from src.utils.logger import logger
 
 

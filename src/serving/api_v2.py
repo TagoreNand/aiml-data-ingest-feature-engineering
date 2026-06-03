@@ -1,4 +1,4 @@
-"""src/serving/api_v2.py — Production FastAPI with auth, batching, ONNX, versioning."""
+﻿"""src/serving/api_v2.py — Production FastAPI with auth, batching, ONNX, versioning."""
 from __future__ import annotations
 
 import asyncio
@@ -6,10 +6,8 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
 
 import torch
-import numpy as np
 from fastapi import FastAPI, HTTPException, Request, Security, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security.api_key import APIKeyHeader
@@ -128,7 +126,7 @@ async def lifespan(app: FastAPI):
     global _model, _tokenizer, _config, _use_onnx, _onnx_sess
     _config = load_config()
     model_name = _config.get("training", {}).get("model_name", "bert-base-uncased")
-    max_length = _config.get("training", {}).get("max_length", 128)
+
 
     logger.info("Loading model for serving...")
     _tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -274,3 +272,5 @@ async def feedback(request: Request):
     with (feedback_path / "feedback.jsonl").open("a") as f:
         f.write(json.dumps({**body, "ts": time.time()}) + "\n")
     return {"status": "recorded"}
+
+

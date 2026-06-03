@@ -1,4 +1,4 @@
-"""src/serving/ab_router.py — A/B testing traffic router with shadow and canary modes."""
+﻿"""src/serving/ab_router.py — A/B testing traffic router with shadow and canary modes."""
 from __future__ import annotations
 
 import hashlib
@@ -85,7 +85,7 @@ class ABRouter:
             m.requests += 1
             m.latency_sum += latency
             m.predictions.extend(result if isinstance(result, list) else [result])
-        except Exception as exc:
+        except Exception:
             self.metrics[primary.name].errors += 1
             raise
 
@@ -97,7 +97,7 @@ class ABRouter:
                     def _shadow_call(variant=v):
                         t = time.perf_counter()
                         try:
-                            r = variant.predict_fn(texts)
+                            variant.predict_fn(texts)
                             self.metrics[variant.name].requests += 1
                             self.metrics[variant.name].latency_sum += time.perf_counter() - t
                         except Exception:
@@ -143,3 +143,4 @@ class ABRouter:
         if tm.avg_latency_ms > latency_threshold_ms:
             return False, f"Challenger p50 latency {tm.avg_latency_ms:.0f}ms > {latency_threshold_ms}ms"
         return True, f"Challenger ({tm.requests} requests, {tm.avg_latency_ms:.0f}ms) passes all gates"
+

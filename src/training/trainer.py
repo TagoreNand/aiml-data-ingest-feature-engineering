@@ -1,4 +1,4 @@
-"""src/training/trainer.py — Training loop with MLflow tracking, checkpointing, and early stopping."""
+﻿"""src/training/trainer.py — Training loop with MLflow tracking, checkpointing, and early stopping."""
 from __future__ import annotations
 
 import time
@@ -34,7 +34,7 @@ class TextDataset(Dataset):
             max_length=max_length,
             return_tensors="pt",
         )
-        self.labels = torch.tensor([l if (l is not None and l == l) else 0 for l in labels])
+        self.labels = torch.tensor([lbl if (lbl is not None and lbl == lbl) else 0 for lbl in labels])
 
     def __len__(self) -> int:
         return len(self.labels)
@@ -227,3 +227,4 @@ class Trainer:
         if best_ckpt.exists():
             model.load_state_dict(torch.load(best_ckpt, map_location=self.device))
         return model, best_metrics
+

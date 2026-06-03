@@ -108,7 +108,7 @@ class FAISSIndex:
         return faiss.IndexIDMap(index)
 
     def add(self, chunks: list[Chunk]) -> None:
-        import faiss, numpy as np
+        import numpy as np
         if self._index is None:
             self._index = self._build_index()
         embeddings = np.array([c.embedding for c in chunks if c.embedding is not None],
@@ -130,14 +130,16 @@ class FAISSIndex:
         return results
 
     def save(self) -> None:
-        import faiss, pickle
+        import faiss
+        import pickle
         self.index_path.mkdir(parents=True, exist_ok=True)
         faiss.write_index(self._index, str(self.index_path / "index.faiss"))
         with open(self.index_path / "chunks.pkl", "wb") as f:
             pickle.dump(self._chunks, f)
 
     def load(self) -> bool:
-        import faiss, pickle
+        import faiss
+        import pickle
         idx_file = self.index_path / "index.faiss"
         if not idx_file.exists():
             return False
