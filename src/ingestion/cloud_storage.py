@@ -4,7 +4,6 @@ from __future__ import annotations
 import io
 import os
 from pathlib import Path
-from typing import Iterator
 
 import pandas as pd
 
@@ -257,7 +256,6 @@ class CloudArtifactStore:
         """Save drift report to cloud."""
         filename = f"drift_report_{timestamp}.json"
         if self.backend == "s3":
-            import boto3, json
             bucket_name, _ = self.s3.parse_s3_path(f"s3://{self.bucket}/")
             key = f"{self.prefix}/reports/{filename}"
             self.s3.client.put_object(

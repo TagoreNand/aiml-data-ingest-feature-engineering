@@ -12,7 +12,6 @@ import subprocess
 import sys
 import time
 import typer
-from pathlib import Path
 
 app = typer.Typer()
 
@@ -55,7 +54,7 @@ def get_current_image(deployment: str, namespace: str) -> str | None:
 
 def health_check(namespace: str, retries: int = 5) -> bool:
     """Port-forward and check /health endpoint."""
-    import socket, threading, http.client
+    import http.client
 
     for attempt in range(retries):
         try:
@@ -155,7 +154,7 @@ def deploy(
                  f"--namespace={namespace}"])
             sys.exit(1)
 
-    print(f"\n✅ Deployment successful!")
+    print("\n✅ Deployment successful!")
     print(f"   Image:     {image}")
     print(f"   Namespace: {namespace}")
 

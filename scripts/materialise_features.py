@@ -1,6 +1,7 @@
 """Materialise features to online (Redis) + offline (Parquet) stores."""
 from __future__ import annotations
-import sys, typer
+import sys
+import typer
 from pathlib import Path
 
 sys.path.insert(0, ".")

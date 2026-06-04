@@ -4,7 +4,6 @@ from __future__ import annotations
 import os
 import tempfile
 from pathlib import Path
-from typing import Any
 
 import torch
 import torch.nn as nn
@@ -145,8 +144,7 @@ class DistributedTrainer:
 
     def train(self, experiment_name: str = "distributed_run") -> dict:
         try:
-            import ray
-            from ray import train as ray_train
+            import ray 
             from ray.train.torch import TorchTrainer
             from ray.train import RunConfig, ScalingConfig
         except ImportError:
