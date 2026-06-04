@@ -440,7 +440,6 @@ python scripts/deploy_k8s.py \
 
 ## Screenshots to add
 
-> **Instructions:** Replace each placeholder below with an actual screenshot from your running system.
 
 ### 1. Swagger UI (`http://localhost:8002/docs`)
 ![Swagger UI](docs/screenshots/swagger_ui.png)
