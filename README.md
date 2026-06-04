@@ -478,6 +478,10 @@ python scripts/deploy_k8s.py \
 ![Evaluation](docs/screenshots/evaluation_table.png)
 *Champion model evaluation: accuracy, f1, precision, recall, loss*
 
+### 10. Tier 6 — All advanced AI components verified
+![Tier 6 verified](docs/screenshots/tier6_verified.png)
+*RAG chunker ✅ · Reward model ✅ · LLM Agent ✅ — ONNX Runtime serving backend loaded*
+
 ---
 
 ## Why this project is well-integrated
