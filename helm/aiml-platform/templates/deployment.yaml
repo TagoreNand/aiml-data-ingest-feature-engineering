@@ -1,44 +1,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-api
+  name: aiml-platform-api
+  namespace: aiml-platform
   labels:
     app: aiml-platform
-    version: {{ .Values.image.tag }}
+    component: api
+    version: "{{ .Values.image.tag }}"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: aiml-platform
+      component: api
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0       # Zero-downtime deploys
+      maxUnavailable: 0        # Zero-downtime rolling updates
   template:
     metadata:
       labels:
         app: aiml-platform
-        version: {{ .Values.image.tag }}
+        component: api
+        version: "{{ .Values.image.tag }}"
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
+      serviceAccountName: aiml-platform
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
         - name: api
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: Always
           ports:
-            - containerPort: 8000
-          env:
-            - name: MLFLOW_TRACKING_URI
-              valueFrom:
-                secretKeyRef:
-                  name: aiml-secrets
-                  key: mlflow-uri
-            - name: MLFLOW_ALLOW_FILE_STORE
-              value: "true"
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: aiml-platform-config
+            - secretRef:
+                name: aiml-platform-secrets
           resources:
             requests:
               cpu: "500m"
@@ -49,13 +59,40 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 8000
+              port: http
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 5
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
-              port: 8000
+              port: http
             initialDelaySeconds: 20
             periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: model-storage
+              mountPath: /app/models
+            - name: logs
+              mountPath: /app/logs
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: aiml-platform-models
+        - name: logs
+          emptyDir: {}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: aiml-platform

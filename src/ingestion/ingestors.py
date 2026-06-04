@@ -136,10 +136,52 @@ class APIIngestor(BaseIngestor):
                     time.sleep(min_interval - elapsed)
 
 
+
+# ── S3 Batch Ingestor ─────────────────────────────────────────────────────────
+
+class S3BatchIngestor(BaseIngestor):
+    """
+    Reads Parquet/CSV files directly from S3.
+    
+    Config:
+      ingestion.batch.source_path: s3://my-bucket/raw/
+      ingestion.batch.format: parquet  # or csv
+    
+    Env vars needed:
+      AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION
+    """
+
+    def ingest(self) -> Iterator[RawRecord]:
+        from src.ingestion.cloud_storage import S3Storage
+        import uuid as _uuid
+
+        source_path = self.cfg["ingestion"]["batch"]["source_path"]
+        s3 = S3Storage()
+        files = s3.list_files(source_path)
+        logger.info(f"S3BatchIngestor found {len(files)} file(s) at {source_path}")
+
+        for s3_path in files:
+            try:
+                df = s3.read_dataframe(s3_path)
+                for _, row in df.iterrows():
+                    yield RawRecord(
+                        id=str(row.get("id", _uuid.uuid4())),
+                        source=s3_path,
+                        timestamp=datetime.now(timezone.utc),
+                        payload=row.to_dict(),
+                    )
+            except Exception as exc:
+                logger.warning(f"Failed to read {s3_path}: {exc}")
+
+
 # ── Factory ───────────────────────────────────────────────────────────────────
 
 def get_ingestor(source: str, config: dict | None = None) -> BaseIngestor:
     if source == "batch":
+        cfg = config or load_config()
+        source_path = cfg.get("ingestion", {}).get("batch", {}).get("source_path", "")
+        if str(source_path).startswith("s3://"):
+            return S3BatchIngestor(config=cfg)
         return BatchIngestor(config=config)
     if source == "kafka":
         return KafkaIngestor(config=config)

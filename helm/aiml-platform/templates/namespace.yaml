@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aiml-platform
+  labels:
+    app: aiml-platform
+    managed-by: helm

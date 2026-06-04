@@ -135,3 +135,40 @@ jobs:
 
 
 # Updated: 2026-06-03
+
+  # ── Deploy to Production ──────────────────────────────────────────────────────
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: build-push
+    environment: production
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.29.0'
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.14.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          kubectl cluster-info
+
+      - name: Deploy to production
+        run: |
+          python scripts/deploy_k8s.py \
+            --image ghcr.io/${{ github.repository }}/aiml-platform:sha-${{ github.sha }} \
+            --namespace aiml-platform \
+            --timeout 300
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n aiml-platform
+          kubectl get hpa  -n aiml-platform

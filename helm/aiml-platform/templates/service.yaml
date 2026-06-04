@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: aiml-platform-api
+  namespace: aiml-platform
+  labels:
+    app: aiml-platform
+    component: api
+spec:
+  type: ClusterIP
+  selector:
+    app: aiml-platform
+    component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aiml-platform-ingress
+  namespace: aiml-platform
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.aiml-platform.example.com
+      secretName: aiml-platform-tls
+  rules:
+    - host: api.aiml-platform.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aiml-platform-api
+                port:
+                  name: http
