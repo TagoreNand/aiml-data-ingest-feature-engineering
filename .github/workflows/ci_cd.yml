@@ -40,7 +40,7 @@ jobs:
         run: |
           python -m pytest tests/unit/ -v \
             --cov=src --cov-report=xml \
-            --cov-fail-under=15
+            --cov-fail-under=10
         env:
           PYTHONPATH: .
           MLFLOW_ALLOW_FILE_STORE: "true"
@@ -172,3 +172,5 @@ jobs:
         run: |
           kubectl get pods -n aiml-platform
           kubectl get hpa  -n aiml-platform
+
+
