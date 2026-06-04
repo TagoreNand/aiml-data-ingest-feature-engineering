@@ -39,77 +39,102 @@ Takes raw text data → validates and engineers features → trains a LoRA fine-
 
 ## Architecture
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                         DATA SOURCES                                 │
-│   CSV / Parquet   ·   Kafka Stream   ·   REST API   ·   S3 Bucket   │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                       INGESTION LAYER                                │
-│   BatchIngestor · KafkaIngestor · APIIngestor · S3BatchIngestor     │
-│   → Normalise to RawRecord schema → land as JSONL in data/raw/      │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                     FEATURE PIPELINE                                 │
-│   Validate → Deduplicate → Engineer (text_len, word_count,          │
-│   timestamp features) → Split (train/val/test) → Parquet            │
-│                                                                      │
-│   FEATURE STORE                                                      │
-│   Offline: Parquet (point-in-time correct joins for training)        │
-│   Online:  Redis (<5ms feature serving for inference)               │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                     TRAINING PIPELINE                                │
-│   Standard:     BERT + classification head + AdamW                  │
-│   Upgraded:     LoRA (rank=8) + label smoothing + cosine LR        │
-│   Distributed:  Ray Train (multi-GPU DDP) + Ray Tune ASHA HPO      │
-│   Tracking:     MLflow experiments + metrics + artifact logging     │
-│   Registry:     Champion/challenger promotion on F1 threshold       │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                      SERVING LAYER                                   │
-│   api_v2.py (FastAPI)                                               │
-│   · ONNX Runtime backend (1.1× speedup)                             │
-│   · API key authentication (X-API-Key header)                       │
-│   · Async dynamic batching queue (32 max batch)                     │
-│   · Request ID tracking per request                                 │
-│   · Confidence scores + probability distributions                   │
-│   · /v1/predict · /health · /metrics · /feedback                     │
-│   · Swagger UI at /docs                                             │
-│                                                                      │
-│   ADVANCED SERVING                                                   │
-│   · A/B shadow testing router (champion vs challenger)              │
-│   · Production RAG v2 (FAISS + cross-encoder reranking)            │
-│   · ReAct LLM agent with tool use and conversation memory           │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                    MONITORING + FEEDBACK LOOP                        │
-│   · PSI drift detection (fallback from Evidently)                   │
-│   · Automated retraining trigger on drift score > 0.25             │
-│   · Prometheus metrics → Grafana dashboard                          │
-│   · RLHF reward model trained on human preference pairs            │
-│   · Feedback endpoint captures corrections for future training      │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │
-                                ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                  INFRASTRUCTURE + CI/CD                              │
-│   · GitHub Actions: lint → test → model validation → build → push  │
-│   · Multi-stage Docker build (builder + runtime, non-root user)     │
-│   · Kubernetes: Helm chart, HPA (2→20 pods), PVC, ServiceMonitor   │
-│   · deploy_k8s.py: rolling deploy + health check + auto-rollback   │
-│   · docker-compose.prod.yml: full stack local production            │
-└──────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph SOURCES["📥 Data sources"]
+        S1["CSV / Parquet\nlocal files"]
+        S2["S3 / GCS\ncloud storage"]
+        S3A["Kafka topic\nevent stream"]
+        S4["REST API\npaginated + retry"]
+    end
+
+    subgraph INGEST["🔄 Ingestion layer"]
+        direction LR
+        BI["BatchIngestor\nCSV, Parquet, auto-detects s3://"]
+        S3I["S3BatchIngestor\nboto3, GCSStorage"]
+        KI["KafkaIngestor\nconsumer, offset tracking"]
+        AI["APIIngestor\nrate-limit, exponential retry"]
+        RAW[("RawRecord JSONL\ndata/raw/")]
+    end
+
+    subgraph FEATURES["⚙️ Feature pipeline"]
+        VAL["Validate\nnulls, dupes, schema"]
+        ENG["Engineer\ntext_len, word_count, timestamps"]
+        SPL["Split\ntrain / val / test"]
+        MAT["Materialise\nParquet files"]
+    end
+
+    subgraph FSTORE["🗄️ Feature store"]
+        OFF[("Offline store\nParquet, point-in-time joins")]
+        ONL[("Online store\nRedis <5ms")]
+        REG["Feature registry\nview definitions + versions"]
+    end
+
+    subgraph TRAINING["🧠 Training pipeline"]
+        BASE["Standard trainer\nBERT + AdamW + linear LR"]
+        LORA["LoRA trainer ★\nrank=8, only 1% params trained\ncosine LR + label smoothing"]
+        RAY["Ray Train\nmulti-GPU DDP, fault-tolerant"]
+        TUNE["Ray Tune HPO\nASHA scheduler, early stopping"]
+        MLF["MLflow tracking\nmetrics, params, artifacts"]
+        REG2["Model registry\nchampion / challenger promotion"]
+    end
+
+    subgraph SERVING["🚀 Serving layer"]
+        subgraph APIV2["api_v2.py — Production API"]
+            AUTH["API key auth\nX-API-Key header"]
+            BATCH["Async batch queue\n32 max, 10ms window"]
+            ONNX["ONNX Runtime\n1.1x speedup, 91ms p50"]
+            RESP["Response\nlabel + confidence + probs\nrequest ID tracking"]
+        end
+        ABTEST["A/B shadow router\nchampion vs challenger"]
+        RAG["RAG v2\nFAISS + cross-encoder reranking"]
+        AGENT["ReAct LLM agent\ntool use + sliding memory"]
+    end
+
+    subgraph MONITOR["📊 Monitoring + feedback loop"]
+        DRIFT["Drift detector\nPSI / Evidently\nthreshold: score > 0.25"]
+        PROM["Prometheus metrics\nreq rate, p99, error rate"]
+        GRAF["Grafana dashboard\nlive panels, imported JSON"]
+        RLHF["RLHF reward model\nBradley-Terry loss"]
+        RETRAIN["Auto-retrain pipeline\ndrift trigger → build → train → register"]
+        FB[("Feedback store\n/feedback endpoint")]
+    end
+
+    subgraph INFRA["☁️ Infrastructure + CI/CD"]
+        GHA["GitHub Actions\nlint → test → validate → build → push → deploy"]
+        DOCK["Multi-stage Docker\nbuilder + runtime, non-root user"]
+        HELM["Kubernetes Helm\nHPA 2→20 pods, PVC, ServiceMonitor"]
+        DEPK["deploy_k8s.py\nrolling update + health check + rollback"]
+    end
+
+    S1 --> BI
+    S2 --> S3I
+    S3A --> KI
+    S4 --> AI
+    BI & S3I & KI & AI --> RAW
+
+    RAW --> VAL --> ENG --> SPL --> MAT
+
+    MAT --> OFF & ONL
+    OFF --> REG
+
+    OFF --> BASE & LORA & RAY
+    RAY --> TUNE
+    BASE & LORA & RAY --> MLF
+    MLF --> REG2
+
+    REG2 --> ONNX
+    ONL --> ONNX
+    AUTH --> BATCH --> ONNX --> RESP
+    REG2 --> ABTEST
+
+    RESP --> PROM & FB
+    PROM --> GRAF
+    FB --> DRIFT & RLHF
+    DRIFT --> RETRAIN
+    RETRAIN --> VAL
+
+    GHA --> DOCK --> HELM --> DEPK
 ```
 
 ---
