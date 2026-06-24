@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aiml-platform-config
+  namespace: aiml-platform
+data:
+  MLFLOW_TRACKING_URI: "sqlite:///mlruns.db"
+  MLFLOW_ALLOW_FILE_STORE: "true"
+  GIT_PYTHON_REFRESH: "quiet"
+  LOG_LEVEL: "info"
+  PYTHONUNBUFFERED: "1"
+  WORKERS: "2"
+  PORT: "8000"

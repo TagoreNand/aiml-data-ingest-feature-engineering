@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python -c \"import pandas as pd; feat='data/features'; [print\\(s, len\\(pd.read_parquet\\(feat+'/'+s+'.parquet'\\)\\), list\\(pd.read_parquet\\(feat+'/'+s+'.parquet'\\).columns\\)\\) for s in ['train','val','test']]\" 2>&1)"
+    ]
+  }
+}
