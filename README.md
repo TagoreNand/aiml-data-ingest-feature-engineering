@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧠 Production AI/ML Platform
+# Production AI/ML Platform
 
 ### An end-to-end, fault-tolerant MLOps platform — from multi-source ingestion to live, monitored, self-retraining inference.
 
@@ -29,7 +29,7 @@
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 1. [Platform at a Glance](#-platform-at-a-glance)
 2. [Live Results](#-live-results)
@@ -49,7 +49,7 @@
 
 ---
 
-## 🎯 Platform at a Glance
+## Platform at a Glance
 
 This platform takes raw text data and carries it through the **complete machine-learning lifecycle**:
 
@@ -57,16 +57,16 @@ This platform takes raw text data and carries it through the **complete machine-
 
 | Domain | What it delivers |
 |---|---|
-| 📥 **Ingestion** | Batch (CSV/Parquet), Kafka stream, REST API (retry + rate-limit), and S3/GCS — all normalised to a `RawRecord` schema |
-| ⚙️ **Features** | Validation, text/temporal feature engineering, deterministic splits, dual-write online/offline store with point-in-time joins |
-| 🧠 **Training** | LoRA fine-tuning (1% of params), fp16 AMP, cosine LR + warmup, label smoothing, Ray DDP + Ray Tune ASHA HPO |
-| 🚀 **Serving** | ONNX runtime, API-key auth, async micro-batching, request-ID tracing, A/B shadow router, RAG v2, ReAct agent |
-| 📊 **Observability** | PSI/Evidently drift detection, Prometheus metrics, Grafana dashboards, auto-retrain trigger, RLHF feedback loop |
-| ☁️ **Infra / MLOps** | Multi-stage Docker, GitHub Actions (lint→test→validate→build→deploy), Helm chart with HPA 2→20, PVC, ServiceMonitor |
+| **Ingestion** | Batch (CSV/Parquet), Kafka stream, REST API (retry + rate-limit), and S3/GCS — all normalised to a `RawRecord` schema |
+| **Features** | Validation, text/temporal feature engineering, deterministic splits, dual-write online/offline store with point-in-time joins |
+| **Training** | LoRA fine-tuning (1% of params), fp16 AMP, cosine LR + warmup, label smoothing, Ray DDP + Ray Tune ASHA HPO |
+| **Serving** | ONNX runtime, API-key auth, async micro-batching, request-ID tracing, A/B shadow router, RAG v2, ReAct agent |
+| **Observability** | PSI/Evidently drift detection, Prometheus metrics, Grafana dashboards, auto-retrain trigger, RLHF feedback loop |
+| **Infra / MLOps** | Multi-stage Docker, GitHub Actions (lint→test→validate→build→deploy), Helm chart with HPA 2→20, PVC, ServiceMonitor |
 
 ---
 
-## 📊 Live Results
+## Live Results
 
 | Metric | Value |
 |---|---|
@@ -82,7 +82,7 @@ This platform takes raw text data and carries it through the **complete machine-
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 A single, integrated control plane. Every layer is independently deployable and observable, yet wired into the next — raw data on the left becomes monitored predictions on the right, and the **monitoring layer feeds drift signals back into feature rebuilding**, closing the loop.
 
@@ -97,7 +97,7 @@ flowchart TB
     classDef monitor fill:#1f3a5c,stroke:#3f7cc4,color:#eaf2ff
     classDef infra fill:#33384a,stroke:#6b7390,color:#eef0f7
 
-    subgraph SRC["📥 Data Sources"]
+    subgraph SRC["Data Sources"]
         direction LR
         S1["CSV / Parquet<br/>local files"]:::source
         S2["AWS S3 / GCS<br/>cloud object storage"]:::source
@@ -105,7 +105,7 @@ flowchart TB
         S4["REST API<br/>paginated"]:::source
     end
 
-    subgraph ING["🔄 Ingestion Layer"]
+    subgraph ING["Ingestion Layer"]
         direction LR
         BI["BatchIngestor<br/>CSV / Parquet"]:::ingest
         S3I["S3BatchIngestor<br/>boto3"]:::ingest
@@ -114,7 +114,7 @@ flowchart TB
         RAW[("RawRecord JSONL<br/>data/raw/")]:::ingest
     end
 
-    subgraph FE["⚙️ Feature Pipeline"]
+    subgraph FE["Feature Pipeline"]
         direction LR
         VAL["Validate<br/>nulls, dupes, schema"]:::feature
         ENG["Engineer<br/>text_len, word_count"]:::feature
@@ -122,13 +122,13 @@ flowchart TB
         MAT["Materialise<br/>Parquet"]:::feature
     end
 
-    subgraph FS["🗄️ Feature Store"]
+    subgraph FS["Feature Store"]
         direction LR
         OFF[("Offline Store<br/>Parquet, PIT joins")]:::store
         ONL[("Online Store<br/>Redis, sub-5ms")]:::store
     end
 
-    subgraph TR["🧠 Training Pipeline"]
+    subgraph TR["Training Pipeline"]
         direction LR
         LORA["LoRA Trainer<br/>rank=8, ~1% params"]:::train
         RAY["Ray Train + Tune<br/>DDP, ASHA HPO"]:::train
@@ -136,7 +136,7 @@ flowchart TB
         REG["Model Registry<br/>champion / challenger"]:::train
     end
 
-    subgraph SV["🚀 Serving Layer"]
+    subgraph SV["Serving Layer"]
         direction LR
         AUTH["API Key Auth"]:::serve
         BATCH["Async Batch Queue"]:::serve
@@ -146,7 +146,7 @@ flowchart TB
         AGT["ReAct Agent"]:::serve
     end
 
-    subgraph MON["📊 Monitoring + Feedback"]
+    subgraph MON["Monitoring + Feedback"]
         direction LR
         DRIFT["Drift Detector<br/>PSI / Evidently"]:::monitor
         PROM["Prometheus"]:::monitor
@@ -155,7 +155,7 @@ flowchart TB
         FB[("Feedback Store")]:::monitor
     end
 
-    subgraph INF["☁️ Infrastructure + CI/CD"]
+    subgraph INF["Infrastructure + CI/CD"]
         direction LR
         GHA["GitHub Actions"]:::infra
         DOCK["Docker multi-stage"]:::infra
@@ -214,7 +214,7 @@ flowchart TB
 
 ---
 
-## 🔁 End-to-End ML Lifecycle (Workflow)
+## End-to-End ML Lifecycle (Workflow)
 
 The platform's defining feature is its **closed feedback loop**. Two gates govern the flow: a **quality gate** during training (does the model clear the F1 threshold?) and a **drift gate** during serving (has the live data distribution shifted?). A failed drift gate re-enters the pipeline at feature validation — no human in the loop required.
 
@@ -244,7 +244,7 @@ flowchart LR
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 aiml-data-ingest-feature-engineering/
@@ -280,7 +280,7 @@ aiml-data-ingest-feature-engineering/
 
 ---
 
-## 🧰 Technology Stack
+## Technology Stack
 
 | Layer | Technologies |
 |---|---|
@@ -302,7 +302,7 @@ aiml-data-ingest-feature-engineering/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 git clone https://github.com/TagoreNand/aiml-data-ingest-feature-engineering.git
@@ -344,7 +344,7 @@ python scripts/deploy_k8s.py \
 
 ---
 
-## 🔬 Pipeline Walkthrough (with live outputs)
+## Pipeline Walkthrough (with live outputs)
 
 > Every step below shows the **actual console / JSON output** the platform produces — no screenshots, just reproducible results.
 
@@ -534,7 +534,7 @@ curl http://localhost:8002/health
 { "status": "ok", "backend": "onnx", "model_loaded": true }
 ```
 
-**✅ Positive prediction** — authenticated, with probabilities:
+**Positive prediction** — authenticated, with probabilities:
 
 ```bash
 curl -X POST http://localhost:8002/v1/predict \
@@ -553,7 +553,7 @@ curl -X POST http://localhost:8002/v1/predict \
 }
 ```
 
-**❌ Negative prediction:**
+**Negative prediction:**
 
 ```bash
 curl -X POST http://localhost:8002/v1/predict \
@@ -572,7 +572,7 @@ curl -X POST http://localhost:8002/v1/predict \
 }
 ```
 
-**🔒 Auth rejection** — request without a valid `X-API-Key`:
+**Auth rejection** — request without a valid `X-API-Key`:
 
 ```bash
 curl -X POST http://localhost:8002/v1/predict \
@@ -664,7 +664,7 @@ All Tier 6 components verified!
 
 ---
 
-## 🔧 CI/CD Pipeline
+## CI/CD Pipeline
 
 Every push to `main` runs a six-stage GitHub Actions pipeline. Lint, test, and model-validation act as **merge gates**; build-and-push ships the image to GHCR; deploy stages roll it out via Helm.
 
@@ -702,7 +702,7 @@ flowchart LR
 
 ---
 
-## ☸️ Kubernetes Deployment Topology
+## Kubernetes Deployment Topology
 
 The Helm chart deploys an autoscaling, observable service: traffic enters through a TLS Ingress, fans out across 2–20 pods (scaled by CPU), reads models from a shared PVC, and exposes metrics to Prometheus via a ServiceMonitor.
 
@@ -746,7 +746,7 @@ aiml-platform   Deployment/aiml-platform   18%/70%    2         20        2
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 ### Production endpoints (`src/serving/api_v2.py`)
 
@@ -769,7 +769,7 @@ class PredictRequest(BaseModel):
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 pytest tests/ -v --cov=src --cov-report=html        # full suite + HTML coverage
@@ -788,7 +788,7 @@ tests/integration/test_api.py .......              [  7 ]
 
 ---
 
-## 🧱 Engineering Design Decisions
+## Engineering Design Decisions
 
 **Why LoRA over full fine-tuning?** Training ~1% of parameters reaches **0.847 F1** on sentiment — comparable to full fine-tuning at a fraction of the compute and memory. This is the industry-standard way to adapt large models.
 
@@ -804,7 +804,7 @@ tests/integration/test_api.py .......              [  7 ]
 
 ---
 
-## 🪜 How the Platform Evolved
+## How the Platform Evolved
 
 Built progressively from a basic skeleton into a senior-grade platform across six tiers:
 
@@ -831,7 +831,7 @@ flowchart LR
 
 ---
 
-## 📝 Project Summary
+## Project Summary
 
 > Built a **production-grade AI/ML platform** from scratch covering multi-source ingestion (Batch · Kafka · REST · S3), feature engineering with an online/offline feature store, **LoRA fine-tuned BERT** training (`val_f1 = 0.847`) with distributed Ray training and Ray Tune HPO, **ONNX-optimised FastAPI** serving with authentication and async batching, **automated drift monitoring with retraining triggers**, a production RAG pipeline with cross-encoder reranking, an **RLHF reward model**, and a **ReAct LLM agent** — all containerised, delivered through a full GitHub Actions **CI/CD** pipeline, and deployed to **Kubernetes via Helm** with autoscaling.
 
